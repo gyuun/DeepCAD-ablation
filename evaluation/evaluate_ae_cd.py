@@ -13,7 +13,7 @@ from utils import read_ply
 from cadlib.visualize import vec2CADsolid, CADsolid2pc
 
 
-PC_ROOT = "../data/pc_cad"
+PC_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "pc_cad"))
 # data that is unable to process
 SKIP_DATA = [""]
 

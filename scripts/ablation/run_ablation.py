@@ -40,7 +40,7 @@ def _manifest_bool(manifest, key):
 
 def _run_identity(run):
     exp = run["experiment"]
-    return exp["id"], "seed_{}".format(run["seed"])
+    return exp["id"], run["run_name"]
 
 
 def _proj_args(manifest, run):
@@ -48,7 +48,7 @@ def _proj_args(manifest, run):
     return os.path.join(manifest["proj_dir"], exp_id), seed_name
 
 
-def _train_command(manifest, run, force_train):
+def _train_command(manifest, run, force_train, resume_train=False):
     proj_dir, exp_name = _proj_args(manifest, run)
     cmd = [
         python_executable(),
@@ -62,7 +62,9 @@ def _train_command(manifest, run, force_train):
         "--nr_epochs", str(manifest.get("nr_epochs", 1000)),
         "--seed", str(run["seed"]),
     ]
-    if force_train:
+    if resume_train:
+        cmd.extend(["--cont", "--ckpt", "latest"])
+    elif force_train:
         cmd.append("--overwrite")
     for key in ARCH_FLAGS:
         if key in run["config"]:
@@ -129,6 +131,8 @@ def _new_meta(manifest, run):
     train_cmd = _train_command(manifest, run, force_train=False)
     return {
         "experiment_id": exp["id"],
+        "run_name": run["run_name"],
+        "run_dir": run["run_dir"],
         "component": exp["component"],
         "variant": exp["variant"],
         "seed": run["seed"],
@@ -182,25 +186,37 @@ def _mark_failed(run, reason):
     update_meta_status(_meta_path(run), "failed", failure_reason=reason, finished_at=utc_now())
 
 
-def run_train(manifest, run, force_list, dry_run=False):
+def run_train(manifest, run, force_list, dry_run=False, resume_train=False):
     ckpt = manifest.get("ckpt", "latest")
+    latest_ckpt_exists = os.path.exists(checkpoint_path(run["run_dir"], "latest"))
+    should_resume_train = resume_train and latest_ckpt_exists
     if dry_run:
-        cmd = _train_command(manifest, run, force_train=_force(force_list, "train"))
+        cmd = _train_command(
+            manifest,
+            run,
+            force_train=_force(force_list, "train"),
+            resume_train=should_resume_train,
+        )
         run_command(cmd, cwd=REPO_ROOT, dry_run=True)
         return
 
-    if os.path.exists(checkpoint_path(run["run_dir"], ckpt)) and not _force(force_list, "train"):
+    if os.path.exists(checkpoint_path(run["run_dir"], ckpt)) and not _force(force_list, "train") and not should_resume_train:
         _ensure_meta(manifest, run)
         update_meta_status(_meta_path(run), "trained")
         return
 
-    if os.path.exists(run["run_dir"]) and not _force(force_list, "train"):
+    if os.path.exists(run["run_dir"]) and not _force(force_list, "train") and not should_resume_train:
         if not os.path.exists(checkpoint_path(run["run_dir"], ckpt)):
             _ensure_meta(manifest, run)
             _mark_failed(run, "existing_incomplete_run_requires_force_train")
             raise RuntimeError("{} exists without checkpoint; rerun with --force train".format(run["run_dir"]))
 
-    cmd = _train_command(manifest, run, force_train=_force(force_list, "train"))
+    cmd = _train_command(
+        manifest,
+        run,
+        force_train=_force(force_list, "train"),
+        resume_train=should_resume_train,
+    )
     code = run_command(cmd, cwd=REPO_ROOT, dry_run=dry_run)
     if code != 0:
         _ensure_meta(manifest, run)
@@ -293,6 +309,8 @@ def run_collect(manifest, run, dry_run=False):
 def stages_for(stage):
     if stage == "all":
         return ["train", "reconstruct", "acc", "cd", "collect"]
+    if stage == "eval":
+        return ["reconstruct", "acc", "cd", "collect"]
     return [stage]
 
 
@@ -300,12 +318,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", default=os.path.join(SCRIPT_DIR, "experiments.yaml"))
     parser.add_argument("--stage", default="all",
-                        choices=["all", "check", "train", "reconstruct", "acc", "cd", "collect"])
+                        choices=["all", "eval", "check", "train", "reconstruct", "acc", "cd", "collect"])
     parser.add_argument("--force", action="append", default=[],
                         choices=["all", "train", "reconstruct", "acc", "cd", "collect"])
     parser.add_argument("--only", action="append", default=[],
                         help="experiment id to run; may be passed multiple times")
     parser.add_argument("--dry_run", action="store_true")
+    parser.add_argument("--resume_train", action="store_true",
+                        help="continue train.py from run_dir/model/latest.pth instead of skipping")
     args = parser.parse_args()
 
     manifest = load_manifest(args.manifest)
@@ -320,7 +340,7 @@ def main():
                 _ensure_meta(manifest, run)
             print("[{} seed {}] {}".format(run["experiment"]["id"], run["seed"], stage))
             if stage == "train":
-                run_train(manifest, run, args.force, dry_run=args.dry_run)
+                run_train(manifest, run, args.force, dry_run=args.dry_run, resume_train=args.resume_train)
             elif stage == "reconstruct":
                 run_reconstruct(manifest, run, args.force, dry_run=args.dry_run)
             elif stage == "acc":

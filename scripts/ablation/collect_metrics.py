@@ -168,7 +168,7 @@ def refresh_summary(manifest):
     run_records = []
     for exp in manifest.get("experiments", []):
         for seed in manifest.get("seeds", []):
-            this_run_dir = run_dir(manifest, exp["id"], seed)
+            this_run_dir = run_dir(manifest, exp["id"], seed, exp)
             meta_path = os.path.join(this_run_dir, "run_meta.json")
             meta = load_meta(meta_path)
             if meta is not None:

@@ -129,8 +129,24 @@ def exp_config(manifest, experiment):
     return cfg
 
 
-def run_dir(manifest, experiment_id, seed):
-    return os.path.join(manifest["proj_dir"], experiment_id, "seed_{}".format(seed))
+def run_name(manifest, experiment, seed):
+    template = experiment.get("run_name_template")
+    if template is None:
+        template = experiment.get("run_name")
+    if template is None:
+        template = manifest.get("run_name_template", "seed_{seed}")
+    return str(template).format(
+        seed=seed,
+        experiment_id=experiment["id"],
+        component=experiment.get("component", ""),
+        variant=experiment.get("variant", ""),
+    )
+
+
+def run_dir(manifest, experiment_id, seed, experiment=None):
+    if experiment is None:
+        experiment = {"id": experiment_id}
+    return os.path.join(manifest["proj_dir"], experiment_id, run_name(manifest, experiment, seed))
 
 
 def iter_runs(manifest, only_ids=None):
@@ -143,7 +159,8 @@ def iter_runs(manifest, only_ids=None):
                 "experiment": experiment,
                 "seed": int(seed),
                 "config": exp_config(manifest, experiment),
-                "run_dir": run_dir(manifest, experiment["id"], seed),
+                "run_name": run_name(manifest, experiment, seed),
+                "run_dir": run_dir(manifest, experiment["id"], seed, experiment),
             }
 
 
@@ -271,10 +288,13 @@ def validate_manifest_against_plan(manifest):
         if exp.get("id") != "baseline" and not exp.get("overrides"):
             warnings.append("{} has no overrides and duplicates baseline".format(exp.get("id")))
 
-    for key, expected in EXPECTED_COVERAGE.items():
-        missing = expected - coverage[key]
-        if missing:
-            errors.append("{} coverage missing {}".format(key, sorted(missing)))
+    if manifest.get("allow_partial_manifest"):
+        warnings.append("partial manifest: A1-A5 coverage check skipped")
+    else:
+        for key, expected in EXPECTED_COVERAGE.items():
+            missing = expected - coverage[key]
+            if missing:
+                errors.append("{} coverage missing {}".format(key, sorted(missing)))
 
     return errors, warnings
 
@@ -285,6 +305,8 @@ def print_alignment_report(manifest):
         print("Alignment check failed:")
         for error in errors:
             print("  - {}".format(error))
+    elif manifest.get("allow_partial_manifest"):
+        print("Alignment check passed: partial manifest is valid; A1-A5 coverage check skipped.")
     else:
         print("Alignment check passed: manifest covers A1-A5 baseline and variants.")
     for warning in warnings:
