@@ -8,7 +8,11 @@ import random
 from scipy.spatial import cKDTree as KDTree
 import time
 import sys
-sys.path.append("..")
+
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if REPO_ROOT not in sys.path:
+    sys.path.insert(0, REPO_ROOT)
+
 from utils import read_ply
 from cadlib.visualize import vec2CADsolid, CADsolid2pc
 
