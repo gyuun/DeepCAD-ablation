@@ -129,17 +129,28 @@ def parse_cd(path, per_item_csv=None):
     }
 
 
-def collect_run_metrics(run_path, ckpt, manifest=None, experiment=None, seed=None):
+def collect_run_metrics(run_path, ckpt, manifest=None, experiment=None, seed=None, allow_missing_cd=False):
     meta = load_meta(os.path.join(run_path, "run_meta.json")) or {}
     acc_path = acc_stat_path(run_path, ckpt)
     cd_path = pc_stat_path(run_path, ckpt)
     if not os.path.exists(acc_path):
         raise FileNotFoundError(acc_path)
-    if not os.path.exists(cd_path):
+    if not os.path.exists(cd_path) and not allow_missing_cd:
         raise FileNotFoundError(cd_path)
 
     acc = parse_acc(acc_path)
-    cd = parse_cd(cd_path, per_item_csv=os.path.join(run_path, "per_item_cd.csv"))
+    if os.path.exists(cd_path):
+        cd = parse_cd(cd_path, per_item_csv=os.path.join(run_path, "per_item_cd.csv"))
+    else:
+        cd = {
+            "total": None,
+            "valid": None,
+            "invalid": None,
+            "invalid_ratio": None,
+            "chamfer_mean": None,
+            "chamfer_trimmed_mean": None,
+            "chamfer_median": None,
+        }
 
     metric = {
         "experiment_id": meta.get("experiment_id") or (experiment or {}).get("id"),
@@ -149,6 +160,7 @@ def collect_run_metrics(run_path, ckpt, manifest=None, experiment=None, seed=Non
         "ckpt": ckpt,
         "acc_cmd": acc["acc_cmd"],
         "acc_param": acc["acc_param"],
+        "cd_available": os.path.exists(cd_path),
         "invalid_ratio": cd["invalid_ratio"],
         "chamfer_mean": cd["chamfer_mean"],
         "chamfer_trimmed_mean": cd["chamfer_trimmed_mean"],

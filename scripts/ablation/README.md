@@ -114,6 +114,17 @@ CUDA_VISIBLE_DEVICES=0 PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python uv run pyth
 
 위 명령은 학습을 실행하지 않고 `reconstruct -> acc -> cd -> collect`만 수행한다. `cd` 평가는 `data/pc_cad`가 필요하다.
 
+서버 환경에 `OCC`/`pythonocc-core`가 아직 없으면 CD 평가는 실행할 수 없다. 이 경우 accuracy만 먼저 수집한다.
+
+```bash
+CUDA_VISIBLE_DEVICES=0 PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python uv run python -u scripts/ablation/run_ablation.py \
+  --manifest scripts/ablation/experiments_baseline_1epoch.yaml \
+  --stage eval_acc \
+  --only baseline
+```
+
+이 명령은 `reconstruct -> acc -> collect_acc`만 수행하며, `metrics.json`에는 `cd_available: false`와 함께 Chamfer/invalid metric이 `null`로 기록된다.
+
 전체 ablation manifest의 특정 실험을 평가하려면:
 
 ```bash

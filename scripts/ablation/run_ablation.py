@@ -1,4 +1,5 @@
 import argparse
+import importlib.util
 import json
 import os
 import sys
@@ -273,6 +274,14 @@ def run_acc(manifest, run, force_list, dry_run=False):
 
 
 def run_cd(manifest, run, force_list, dry_run=False):
+    if importlib.util.find_spec("OCC") is None and not dry_run:
+        message = (
+            "CD evaluation requires pythonocc-core/OCC. "
+            "Install it in the active environment, or run --stage eval_acc to collect accuracy-only metrics."
+        )
+        _mark_failed(run, "occ_dependency_missing")
+        raise RuntimeError(message)
+
     ckpt = manifest.get("ckpt", "latest")
     path = pc_stat_path(run["run_dir"], ckpt)
     if os.path.exists(path) and not _force(force_list, "cd"):
@@ -290,16 +299,20 @@ def run_cd(manifest, run, force_list, dry_run=False):
         update_meta_status(_meta_path(run), "cd_evaluated")
 
 
-def run_collect(manifest, run, dry_run=False):
+def run_collect(manifest, run, dry_run=False, allow_missing_cd=False):
     if dry_run:
         print("collect {}".format(run["run_dir"]))
         return
     metric = collect_run_metrics(run["run_dir"], manifest.get("ckpt", "latest"), manifest=manifest,
-                                 experiment=run["experiment"], seed=run["seed"])
+                                 experiment=run["experiment"], seed=run["seed"],
+                                 allow_missing_cd=allow_missing_cd)
     update_meta_status(_meta_path(run), "collected")
     if metric["acc_cmd"] is None or metric["acc_param"] is None:
         _mark_failed(run, "non_finite_accuracy_metric")
         raise RuntimeError("non-finite accuracy metric in {}".format(metrics_path(run["run_dir"])))
+    if not metric["cd_available"] and allow_missing_cd:
+        update_meta_status(_meta_path(run), "acc_collected", finished_at=utc_now())
+        return
     if metric["valid"] == 0 or metric["invalid_ratio"] == 1.0:
         _mark_failed(run, "no_valid_cd_samples")
         raise RuntimeError("no valid CD samples in {}".format(pc_stat_path(run["run_dir"], manifest.get("ckpt", "latest"))))
@@ -311,6 +324,8 @@ def stages_for(stage):
         return ["train", "reconstruct", "acc", "cd", "collect"]
     if stage == "eval":
         return ["reconstruct", "acc", "cd", "collect"]
+    if stage == "eval_acc":
+        return ["reconstruct", "acc", "collect_acc"]
     return [stage]
 
 
@@ -318,7 +333,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", default=os.path.join(SCRIPT_DIR, "experiments.yaml"))
     parser.add_argument("--stage", default="all",
-                        choices=["all", "eval", "check", "train", "reconstruct", "acc", "cd", "collect"])
+                        choices=["all", "eval", "eval_acc", "check", "train", "reconstruct", "acc", "cd", "collect", "collect_acc"])
     parser.add_argument("--force", action="append", default=[],
                         choices=["all", "train", "reconstruct", "acc", "cd", "collect"])
     parser.add_argument("--only", action="append", default=[],
@@ -349,6 +364,8 @@ def main():
                 run_cd(manifest, run, args.force, dry_run=args.dry_run)
             elif stage == "collect":
                 run_collect(manifest, run, dry_run=args.dry_run)
+            elif stage == "collect_acc":
+                run_collect(manifest, run, dry_run=args.dry_run, allow_missing_cd=True)
 
     if not args.dry_run:
         summary_path, count = refresh_summary(manifest)
