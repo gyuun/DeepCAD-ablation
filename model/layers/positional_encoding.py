@@ -21,6 +21,15 @@ class PositionalEncodingSinCos(nn.Module):
         return self.dropout(x)
 
 
+class PositionalEncodingNone(nn.Module):
+    def __init__(self, dropout=0.1):
+        super(PositionalEncodingNone, self).__init__()
+        self.dropout = nn.Dropout(p=dropout)
+
+    def forward(self, x):
+        return self.dropout(x)
+
+
 class PositionalEncodingLUT(nn.Module):
 
     def __init__(self, d_model, dropout=0.1, max_len=250):
@@ -41,3 +50,13 @@ class PositionalEncodingLUT(nn.Module):
         pos = self.position[:x.size(0)]
         x = x + self.pos_embed(pos)
         return self.dropout(x)
+
+
+def build_positional_encoding(kind, d_model, dropout=0.1, max_len=250):
+    if kind == "none":
+        return PositionalEncodingNone(dropout=dropout)
+    if kind == "sincos":
+        return PositionalEncodingSinCos(d_model, dropout=dropout, max_len=max_len)
+    if kind == "learned":
+        return PositionalEncodingLUT(d_model, dropout=dropout, max_len=max_len)
+    raise ValueError("Unknown positional encoding: {}".format(kind))

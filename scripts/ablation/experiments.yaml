@@ -1,0 +1,88 @@
+{
+  "project": "deepcad_transformer_ablation",
+  "data_root": "data",
+  "proj_dir": "proj_log/ablation",
+  "gpu_ids": "0",
+  "nr_epochs": 1000,
+  "ckpt": 1000,
+  "batch_size": 512,
+  "num_workers": 8,
+  "seeds": [2026, 2027, 2028],
+  "defaults": {
+    "model_type": "ablation",
+    "pos_encoding": "learned",
+    "n_heads": 8,
+    "n_layers": 4,
+    "n_layers_decode": 4,
+    "decoder_conditioning": "global_add",
+    "dim_feedforward": 512
+  },
+  "experiments": [
+    {
+      "id": "baseline",
+      "component": "baseline",
+      "variant": "current",
+      "overrides": {}
+    },
+    {
+      "id": "A1_pos_none",
+      "component": "positional_encoding",
+      "variant": "none",
+      "overrides": {"pos_encoding": "none"}
+    },
+    {
+      "id": "A1_pos_sincos",
+      "component": "positional_encoding",
+      "variant": "sincos",
+      "overrides": {"pos_encoding": "sincos"}
+    },
+    {
+      "id": "A3_layers_1",
+      "component": "layer_count",
+      "variant": "1+1",
+      "overrides": {"n_layers": 1, "n_layers_decode": 1}
+    },
+    {
+      "id": "A3_layers_2",
+      "component": "layer_count",
+      "variant": "2+2",
+      "overrides": {"n_layers": 2, "n_layers_decode": 2}
+    },
+    {
+      "id": "A5_ffn_128",
+      "component": "ffn_capacity",
+      "variant": "128",
+      "overrides": {"dim_feedforward": 128}
+    },
+    {
+      "id": "A5_ffn_256",
+      "component": "ffn_capacity",
+      "variant": "256",
+      "overrides": {"dim_feedforward": 256}
+    },
+    {
+      "id": "A2_heads_1",
+      "component": "attention_heads",
+      "variant": "1",
+      "overrides": {"n_heads": 1}
+    },
+    {
+      "id": "A2_heads_2",
+      "component": "attention_heads",
+      "variant": "2",
+      "overrides": {"n_heads": 2}
+    },
+    {
+      "id": "A2_heads_4",
+      "component": "attention_heads",
+      "variant": "4",
+      "overrides": {"n_heads": 4}
+    },
+    {
+      "id": "A4_cross_attn",
+      "component": "decoder_conditioning",
+      "variant": "cross_attn",
+      "overrides": {"decoder_conditioning": "cross_attn"}
+    }
+  ]
+}

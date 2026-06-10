@@ -1,15 +1,31 @@
 from collections import OrderedDict
 from tqdm import tqdm
 import argparse
+import random
+import numpy as np
+import torch
 from dataset.cad_dataset import get_dataloader
 from config import ConfigAE
 from utils import cycle
 from trainer import TrainerAE
 
 
+def set_random_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    if hasattr(torch.backends, "cudnn"):
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+
 def main():
     # create experiment cfg containing all hyperparameters
     cfg = ConfigAE('train')
+    set_random_seed(cfg.seed)
 
     # create network and training agent
     tr_agent = TrainerAE(cfg)
