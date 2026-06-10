@@ -61,19 +61,19 @@ def process_one(path):
     data_id = data_id_from_path(path)
     gt_pc_path = gt_pc_path_from_data_id(data_id)
     if not os.path.exists(gt_pc_path):
-        return None
+        return None, "missing_gt"
 
     try:
         shape = vec2CADsolid(out_vec)
     except Exception as e:
-        print("create_CAD failed", data_id)
-        return None
+        print("create_CAD failed", data_id, type(e).__name__)
+        return None, "create_cad_failed"
     
     try:
         out_pc = CADsolid2pc(shape, args.n_points, data_id)
     except Exception as e:
-        print("convert pc failed:", data_id)
-        return None
+        print("convert pc failed:", data_id, type(e).__name__)
+        return None, "convert_pc_failed"
 
     if np.max(np.abs(out_pc)) > 2: # normalize out-of-bound data
         out_pc = normalize_pc(out_pc)
@@ -83,7 +83,13 @@ def process_one(path):
     gt_pc = gt_pc[sample_idx]
 
     cd = chamfer_dist(gt_pc, out_pc)
-    return cd
+    return cd, "valid"
+
+
+def print_status_counts(statuses, fp=None):
+    keys = sorted(set(statuses))
+    parts = ["{}: {}".format(key, statuses.count(key)) for key in keys]
+    print("CD status counts:", ", ".join(parts), file=fp)
 
 
 def run(args):
@@ -115,9 +121,12 @@ def run(args):
                 n_processed = len(record_res) - 3
 
     if args.parallel:
-        dists = Parallel(n_jobs=8, verbose=2)(delayed(process_one)(x) for x in filepaths)
+        results = Parallel(n_jobs=8, verbose=2)(delayed(process_one)(x) for x in filepaths)
+        dists = [dist for dist, status in results]
+        statuses = [status for dist, status in results]
     else:
         dists = []
+        statuses = []
         for i in range(len(filepaths)):
             print("processing[{}] {}".format(i, filepaths[i]))
             data_id = filepaths[i].split('/')[-1].split('.')[0]
@@ -126,16 +135,21 @@ def run(args):
                 record_dist = record_res[i].split('\t')[-1][:-1]
                 record_dist = None if record_dist == 'None' else eval(record_dist)
                 dists.append(record_dist)
+                statuses.append("cached_valid" if record_dist is not None else "cached_none")
                 continue
 
             if data_id in SKIP_DATA:
                 print("skip {}".format(data_id))
                 res = None
+                status = "skipped"
             else:
-                res = process_one(filepaths[i])
+                res, status = process_one(filepaths[i])
             with open(save_path, 'a') as fp:
                 print("{}\t{}\t{}".format(i, data_id, res), file=fp)
             dists.append(res)
+            statuses.append(status)
+
+    print_status_counts(statuses)
 
     valid_dists = [x for x in dists if x is not None]
     valid_dists = sorted(valid_dists)
@@ -160,6 +174,7 @@ def run(args):
     print("total:", len(filepaths), "\t invalid:", n_invalid, "\t invalid ratio:", n_invalid / len(filepaths))
     print("avg dist:", avg_dist, "trim_avg_dist:", trim_avg_dist, "med dist:", med_dist)
     with open(save_path, "a") as fp:
+        print_status_counts(statuses, fp=fp)
         print("#####" * 10, file=fp)
         print("total:", len(filepaths), "\t invalid:", n_invalid, "\t invalid ratio:", n_invalid / len(filepaths),
               file=fp)
