@@ -9,7 +9,7 @@ REPO_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, "..", ".."))
 if REPO_ROOT not in sys.path:
     sys.path.insert(0, REPO_ROOT)
 
-from scripts.ablation.collect_metrics import collect_run_metrics, refresh_summary
+from scripts.ablation.collect_metrics import collect_run_metrics, parse_acc, refresh_summary
 from scripts.ablation.utils import (
     ARCH_FLAGS,
     acc_stat_path,
@@ -261,9 +261,12 @@ def run_acc(manifest, run, force_list, dry_run=False):
     ckpt = manifest.get("ckpt", "latest")
     path = acc_stat_path(run["run_dir"], ckpt)
     if os.path.exists(path) and not _force(force_list, "acc"):
-        if not dry_run:
-            update_meta_status(_meta_path(run), "acc_evaluated")
-        return
+        current = parse_acc(path)
+        if current["acc_cmd"] is not None and current["acc_param"] is not None:
+            if not dry_run:
+                update_meta_status(_meta_path(run), "acc_evaluated")
+            return
+        print("existing accuracy stat has non-finite metrics; recomputing {}".format(path))
     cmd = _acc_command(manifest, run)
     code = run_command(cmd, cwd=REPO_ROOT, log_path=os.path.join(run["run_dir"], "run_ablation.log"), dry_run=dry_run)
     if code != 0:
