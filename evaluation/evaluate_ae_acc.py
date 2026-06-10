@@ -69,8 +69,8 @@ for name in tqdm(filenames):
             each_param_cnt[cmd, np.arange(N_ARGS)] += 1
             each_param_acc[cmd, np.arange(N_ARGS)] += tole_acc
 
-    param_acc = np.mean(param_acc)
-    avg_param_acc.append(param_acc)
+    if param_acc:
+        avg_param_acc.append(np.mean(param_acc))
     cmd_acc = np.mean(cmd_acc)
     avg_cmd_acc.append(cmd_acc)
 
@@ -79,7 +79,7 @@ fp = open(save_path, "w")
 # overall accuracy (averaged over all data)
 avg_cmd_acc = np.mean(avg_cmd_acc)
 print("avg command acc (ACC_cmd):", avg_cmd_acc, file=fp)
-avg_param_acc = np.mean(avg_param_acc)
+avg_param_acc = np.mean(avg_param_acc) if avg_param_acc else float("nan")
 print("avg param acc (ACC_param):", avg_param_acc, file=fp)
 
 # acc of each command type

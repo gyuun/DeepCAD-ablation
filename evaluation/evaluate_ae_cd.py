@@ -44,14 +44,22 @@ def normalize_pc(points):
     return points
 
 
+def data_id_from_path(path):
+    return path.split('/')[-1].split('.')[0][:8]
+
+
+def gt_pc_path_from_data_id(data_id):
+    truck_id = data_id[:4]
+    return os.path.join(PC_ROOT, truck_id, data_id + '.ply')
+
+
 def process_one(path):
     with h5py.File(path, 'r') as fp:
         out_vec = fp["out_vec"][:].astype(float)
         # gt_vec = fp["gt_vec"][:].astype(np.float)
 
-    data_id = path.split('/')[-1].split('.')[0][:8]
-    truck_id = data_id[:4]
-    gt_pc_path = os.path.join(PC_ROOT, truck_id, data_id + '.ply')
+    data_id = data_id_from_path(path)
+    gt_pc_path = gt_pc_path_from_data_id(data_id)
     if not os.path.exists(gt_pc_path):
         return None
 
@@ -82,6 +90,17 @@ def run(args):
     filepaths = sorted(glob.glob(os.path.join(args.src, "*.h5")))
     if args.num != -1:
         filepaths = filepaths[:args.num]
+
+    missing_gt = []
+    for path in filepaths:
+        data_id = data_id_from_path(path)
+        if data_id in SKIP_DATA:
+            continue
+        if not os.path.exists(gt_pc_path_from_data_id(data_id)):
+            missing_gt.append(data_id)
+    if missing_gt:
+        print("missing gt point clouds: {}/{} under {}".format(len(missing_gt), len(filepaths), PC_ROOT))
+        print("first missing gt point clouds:", missing_gt[:20])
 
     save_path = args.src + '_pc_stat.txt'
     record_res = None
@@ -125,9 +144,17 @@ def run(args):
     n_valid = len(valid_dists)
     n_invalid = len(dists) - n_valid
 
-    avg_dist = np.mean(valid_dists)
-    trim_avg_dist = np.mean(valid_dists[int(n_valid * 0.1):-int(n_valid * 0.1)])
-    med_dist = np.median(valid_dists)
+    if n_valid == 0:
+        avg_dist = float("nan")
+        trim_avg_dist = float("nan")
+        med_dist = float("nan")
+    else:
+        avg_dist = np.mean(valid_dists)
+        trim_start = int(n_valid * 0.1)
+        trim_end = n_valid - trim_start
+        trimmed = valid_dists[trim_start:trim_end]
+        trim_avg_dist = np.mean(trimmed if trimmed else valid_dists)
+        med_dist = np.median(valid_dists)
 
     print("#####" * 10)
     print("total:", len(filepaths), "\t invalid:", n_invalid, "\t invalid ratio:", n_invalid / len(filepaths))
