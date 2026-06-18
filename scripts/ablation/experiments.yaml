@@ -1,13 +1,14 @@
 {
-  "project": "deepcad_transformer_ablation",
+  "project": "deepcad_transformer_ablation_500epoch",
   "data_root": "data",
   "proj_dir": "proj_log/ablation",
   "gpu_ids": "0",
-  "nr_epochs": 1000,
-  "ckpt": 1000,
+  "nr_epochs": 502,
+  "ckpt": "latest",
   "batch_size": 512,
   "num_workers": 8,
-  "seeds": [2026, 2027, 2028],
+  "seeds": [2026],
+  "cd_parallel": true,
   "defaults": {
     "model_type": "ablation",
     "pos_encoding": "learned",
