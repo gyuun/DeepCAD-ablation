@@ -1,0 +1,33 @@
+{
+  "acc_cmd": 0.8128960562555158,
+  "acc_param": 0.6258887156888295,
+  "arg_group_acc": {
+    "arc": 0.40160604,
+    "circle": 0.8223548466666667,
+    "extent": 0.7591723,
+    "line": 0.5334036200000001,
+    "plane": 0.9317973133333334,
+    "transform": 0.473797895
+  },
+  "cd_available": true,
+  "chamfer_mean": 0.42381440447557406,
+  "chamfer_median": 0.32913470029776015,
+  "chamfer_trimmed_mean": 0.3719705609842651,
+  "ckpt": "latest",
+  "command_acc": {
+    "Arc": 0.36767217,
+    "Circle": 0.53741981,
+    "EOS": 0.0,
+    "Ext": 0.47737462,
+    "Line": 0.86262539,
+    "SOL": 0.6380597
+  },
+  "component": "baseline",
+  "experiment_id": "baseline",
+  "invalid": 2675,
+  "invalid_ratio": 0.3322155986090412,
+  "seed": 2026,
+  "total": 8052,
+  "valid": 5377,
+  "variant": "current"
+}

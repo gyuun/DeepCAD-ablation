@@ -1,0 +1,33 @@
+{
+  "acc_cmd": 0.8453177580753204,
+  "acc_param": 0.640355011296127,
+  "arg_group_acc": {
+    "arc": 0.37955318,
+    "circle": 0.7894022666666666,
+    "extent": 0.7734023125,
+    "line": 0.5303258,
+    "plane": 0.9403935899999999,
+    "transform": 0.4860316475
+  },
+  "cd_available": true,
+  "chamfer_mean": 0.32464738243413016,
+  "chamfer_median": 0.2472609066253278,
+  "chamfer_trimmed_mean": 0.27844571653191563,
+  "ckpt": "latest",
+  "command_acc": {
+    "Arc": 0.29297097,
+    "Circle": 0.58363032,
+    "EOS": 0.0,
+    "Ext": 0.49106342,
+    "Line": 0.93473445,
+    "SOL": 0.64846082
+  },
+  "component": "ffn_capacity",
+  "experiment_id": "A5_ffn_256",
+  "invalid": 2650,
+  "invalid_ratio": 0.32911077993045207,
+  "seed": 2026,
+  "total": 8052,
+  "valid": 5402,
+  "variant": "256"
+}

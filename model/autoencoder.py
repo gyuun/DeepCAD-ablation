@@ -23,7 +23,8 @@ class CADEmbedding(nn.Module):
                 group_len = cfg.max_num_groups
             self.group_embed = nn.Embedding(group_len + 2, cfg.d_model)
 
-        self.pos_encoding = PositionalEncodingLUT(cfg.d_model, max_len=seq_len+2)
+        pos_encoding = getattr(cfg, "pos_encoding", "learned")
+        self.pos_encoding = build_positional_encoding(pos_encoding, cfg.d_model, cfg.dropout, max_len=seq_len+2)
 
     def forward(self, commands, args, groups=None):
         S, N = commands.shape
@@ -47,7 +48,8 @@ class ConstEmbedding(nn.Module):
         self.d_model = cfg.d_model
         self.seq_len = seq_len
 
-        self.PE = PositionalEncodingLUT(cfg.d_model, max_len=seq_len)
+        pos_encoding = getattr(cfg, "pos_encoding", "learned")
+        self.PE = build_positional_encoding(pos_encoding, cfg.d_model, cfg.dropout, max_len=seq_len)
 
     def forward(self, z):
         N = z.size(1)
@@ -106,7 +108,15 @@ class Decoder(nn.Module):
 
         self.embedding = ConstEmbedding(cfg, cfg.max_total_len)
 
-        decoder_layer = TransformerDecoderLayerGlobalImproved(cfg.d_model, cfg.dim_z, cfg.n_heads, cfg.dim_feedforward, cfg.dropout)
+        decoder_conditioning = getattr(cfg, "decoder_conditioning", "global_add")
+        if decoder_conditioning == "global_add":
+            decoder_layer = TransformerDecoderLayerGlobalImproved(
+                cfg.d_model, cfg.dim_z, cfg.n_heads, cfg.dim_feedforward, cfg.dropout)
+        elif decoder_conditioning == "cross_attn":
+            decoder_layer = TransformerDecoderLayerLatentCrossAttnImproved(
+                cfg.d_model, cfg.dim_z, cfg.n_heads, cfg.dim_feedforward, cfg.dropout)
+        else:
+            raise ValueError("Unknown decoder conditioning: {}".format(decoder_conditioning))
         decoder_norm = LayerNorm(cfg.d_model)
         self.decoder = TransformerDecoder(decoder_layer, cfg.n_layers_decode, decoder_norm)
 
@@ -171,3 +181,8 @@ class CADTransformer(nn.Module):
             res["tgt_args"] = args_enc
 
         return res
+
+
+class CADTransformerAblation(CADTransformer):
+    """Same top-level interface as CADTransformer with cfg-controlled ablation components."""
+    pass

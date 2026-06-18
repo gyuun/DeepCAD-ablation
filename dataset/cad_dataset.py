@@ -4,15 +4,33 @@ import os
 import json
 import h5py
 import random
+import inspect
 from cadlib.macro import *
+
+
+def _seed_worker(worker_id, seed):
+    worker_seed = seed + worker_id
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
+    torch.manual_seed(worker_seed)
 
 
 def get_dataloader(phase, config, shuffle=None):
     is_shuffle = phase == 'train' if shuffle is None else shuffle
 
     dataset = CADDataset(phase, config)
-    dataloader = DataLoader(dataset, batch_size=config.batch_size, shuffle=is_shuffle, num_workers=config.num_workers,
-                            worker_init_fn=np.random.seed())
+    worker_seed = getattr(config, "seed", 2026)
+    loader_kwargs = {
+        "batch_size": config.batch_size,
+        "shuffle": is_shuffle,
+        "num_workers": config.num_workers,
+        "worker_init_fn": lambda worker_id: _seed_worker(worker_id, worker_seed),
+    }
+    if "generator" in inspect.signature(DataLoader).parameters:
+        generator = torch.Generator()
+        generator.manual_seed(worker_seed)
+        loader_kwargs["generator"] = generator
+    dataloader = DataLoader(dataset, **loader_kwargs)
     return dataloader
 
 

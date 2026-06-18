@@ -24,10 +24,12 @@ class ConfigAE(object):
         # experiment paths
         self.exp_dir = os.path.join(self.proj_dir, self.exp_name)
         if phase == "train" and args.cont is not True and os.path.exists(self.exp_dir):
-            response = input('Experiment log/model already exists, overwrite? (y/n) ')
-            if response != 'y':
-                exit()
-            shutil.rmtree(self.exp_dir)
+            if args.overwrite:
+                shutil.rmtree(self.exp_dir)
+            else:
+                response = input('Experiment log/model already exists, overwrite? (y/n) ')
+                if response != 'y':
+                    exit()
 
         self.log_dir = os.path.join(self.exp_dir, 'log')
         self.model_dir = os.path.join(self.exp_dir, 'model')
@@ -59,6 +61,10 @@ class ConfigAE(object):
         self.dropout = 0.1                # Dropout rate used in basic layers and Transformers
         self.dim_z = 256                 # Latent vector dimensionality
         self.use_group_emb = True
+        self.model_type = "baseline"
+        self.pos_encoding = "learned"
+        self.decoder_conditioning = "global_add"
+        self.seed = 2026
 
         self.max_n_ext = MAX_N_EXT
         self.max_n_loops = MAX_N_LOOPS
@@ -95,6 +101,23 @@ class ConfigAE(object):
         parser.add_argument('--val_frequency', type=int, default=10, help="run validation every x iterations")
         parser.add_argument('--vis_frequency', type=int, default=2000, help="visualize output every x iterations")
         parser.add_argument('--augment', action='store_true', help="use random data augmentation")
+        parser.add_argument('--overwrite', action='store_true', help="overwrite an existing training experiment without prompting")
+        parser.add_argument('--seed', type=int, default=self.seed, help="random seed for training and dataloader workers")
+        parser.add_argument('--model_type', type=str, default=self.model_type, choices=['baseline', 'ablation'],
+                            help="top-level model family to instantiate")
+        parser.add_argument('--pos_encoding', type=str, default=self.pos_encoding, choices=['none', 'sincos', 'learned'],
+                            help="positional encoding used by encoder and decoder")
+        parser.add_argument('--n_heads', type=int, default=self.n_heads, choices=[1, 2, 4, 8],
+                            help="number of transformer attention heads")
+        parser.add_argument('--n_layers', type=int, default=self.n_layers, choices=[1, 2, 4],
+                            help="number of encoder transformer layers")
+        parser.add_argument('--n_layers_decode', type=int, default=self.n_layers_decode, choices=[1, 2, 4],
+                            help="number of decoder transformer layers")
+        parser.add_argument('--decoder_conditioning', type=str, default=self.decoder_conditioning,
+                            choices=['global_add', 'cross_attn'],
+                            help="how the decoder receives the latent vector")
+        parser.add_argument('--dim_feedforward', type=int, default=self.dim_feedforward, choices=[128, 256, 512],
+                            help="transformer feed-forward hidden dimension")
         
         if not self.is_train:
             parser.add_argument('-m', '--mode', type=str, choices=['rec', 'enc', 'dec'])

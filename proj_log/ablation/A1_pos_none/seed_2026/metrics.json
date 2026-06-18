@@ -1,0 +1,33 @@
+{
+  "acc_cmd": 0.46619100442536027,
+  "acc_param": 0.4435654746851035,
+  "arg_group_acc": {
+    "arc": 0.4159467875,
+    "circle": 0.7548658600000001,
+    "extent": 0.684210525,
+    "line": 0.401895195,
+    "plane": 0.8260869533333333,
+    "transform": 0.299771165
+  },
+  "cd_available": true,
+  "chamfer_mean": null,
+  "chamfer_median": null,
+  "chamfer_trimmed_mean": null,
+  "ckpt": "latest",
+  "command_acc": {
+    "Arc": 0.41178145,
+    "Circle": 0.22582561,
+    "EOS": 0.0,
+    "Ext": 0.0261223,
+    "Line": 0.90179552,
+    "SOL": 0.08451493
+  },
+  "component": "positional_encoding",
+  "experiment_id": "A1_pos_none",
+  "invalid": 8052,
+  "invalid_ratio": 1.0,
+  "seed": 2026,
+  "total": 8052,
+  "valid": 0,
+  "variant": "none"
+}

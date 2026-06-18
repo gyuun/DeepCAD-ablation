@@ -1,0 +1,4 @@
+CD status counts: create_cad_failed: 8037, missing_gt: 15
+##################################################
+total: 8052 	 invalid: 8052 	 invalid ratio: 1.0
+avg dist: nan trim_avg_dist: nan med dist: nan

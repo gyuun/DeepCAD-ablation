@@ -1,0 +1,4 @@
+CD status counts: convert_pc_failed: 191, create_cad_failed: 2755, missing_gt: 15, valid: 5091
+##################################################
+total: 8052 	 invalid: 2961 	 invalid ratio: 0.36773472429210136
+avg dist: 0.3977959798852534 trim_avg_dist: 0.3457934219904297 med dist: 0.3019368557793918

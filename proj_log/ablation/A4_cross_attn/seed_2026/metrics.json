@@ -1,0 +1,33 @@
+{
+  "acc_cmd": 0.8250651082184773,
+  "acc_param": 0.6339670100001178,
+  "arg_group_acc": {
+    "arc": 0.3912943325,
+    "circle": 0.7751332166666667,
+    "extent": 0.7702169625,
+    "line": 0.53277619,
+    "plane": 0.9394312933333334,
+    "transform": 0.482587525
+  },
+  "cd_available": true,
+  "chamfer_mean": 0.3865029322205382,
+  "chamfer_median": 0.28496117423405903,
+  "chamfer_trimmed_mean": 0.3316941715390393,
+  "ckpt": "latest",
+  "command_acc": {
+    "Arc": 0.30890723,
+    "Circle": 0.66880494,
+    "EOS": 0.0,
+    "Ext": 0.48490645,
+    "Line": 0.88353414,
+    "SOL": 0.61725746
+  },
+  "component": "decoder_conditioning",
+  "experiment_id": "A4_cross_attn",
+  "invalid": 2795,
+  "invalid_ratio": 0.34711872826626927,
+  "seed": 2026,
+  "total": 8052,
+  "valid": 5257,
+  "variant": "cross_attn"
+}

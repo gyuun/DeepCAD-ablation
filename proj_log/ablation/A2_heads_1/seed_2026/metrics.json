@@ -1,0 +1,33 @@
+{
+  "acc_cmd": 0.7884885973733996,
+  "acc_param": 0.6244681156060339,
+  "arg_group_acc": {
+    "arc": 0.39490445750000003,
+    "circle": 0.84068738,
+    "extent": 0.7625542275,
+    "line": 0.53499946,
+    "plane": 0.9369878633333334,
+    "transform": 0.47226239000000003
+  },
+  "cd_available": true,
+  "chamfer_mean": 0.42288173128229234,
+  "chamfer_median": 0.32731150278514637,
+  "chamfer_trimmed_mean": 0.3733009987769958,
+  "ckpt": "latest",
+  "command_acc": {
+    "Arc": 0.312749,
+    "Circle": 0.52767878,
+    "EOS": 0.0,
+    "Ext": 0.45471935,
+    "Line": 0.83770058,
+    "SOL": 0.62014925
+  },
+  "component": "attention_heads",
+  "experiment_id": "A2_heads_1",
+  "invalid": 2886,
+  "invalid_ratio": 0.35842026825633383,
+  "seed": 2026,
+  "total": 8052,
+  "valid": 5166,
+  "variant": "1"
+}

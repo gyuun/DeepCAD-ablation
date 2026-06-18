@@ -1,0 +1,30 @@
+{
+  "project": "deepcad_transformer_ablation_baseline_1epoch_eval",
+  "data_root": "data",
+  "proj_dir": "proj_log/ablation",
+  "gpu_ids": "0",
+  "ckpt": "latest",
+  "batch_size": 8,
+  "num_workers": 0,
+  "seeds": [2026],
+  "allow_partial_manifest": true,
+  "cd_parallel": true,
+  "defaults": {
+    "model_type": "ablation",
+    "pos_encoding": "learned",
+    "n_heads": 8,
+    "n_layers": 4,
+    "n_layers_decode": 4,
+    "decoder_conditioning": "global_add",
+    "dim_feedforward": 512
+  },
+  "experiments": [
+    {
+      "id": "baseline",
+      "component": "baseline",
+      "variant": "current_1epoch",
+      "run_name_template": "seed_{seed}_test1epoch",
+      "overrides": {}
+    }
+  ]
+}
