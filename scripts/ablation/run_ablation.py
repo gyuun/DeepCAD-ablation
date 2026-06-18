@@ -318,7 +318,10 @@ def run_collect(manifest, run, dry_run=False, allow_missing_cd=False):
         return
     if metric["valid"] == 0 or metric["invalid_ratio"] == 1.0:
         _mark_failed(run, "no_valid_cd_samples")
-        raise RuntimeError("no valid CD samples in {}".format(pc_stat_path(run["run_dir"], manifest.get("ckpt", "latest"))))
+        print("no valid CD samples in {}; marked failed and continuing".format(
+            pc_stat_path(run["run_dir"], manifest.get("ckpt", "latest"))
+        ))
+        return
     update_meta_status(_meta_path(run), "completed", finished_at=utc_now())
 
 
