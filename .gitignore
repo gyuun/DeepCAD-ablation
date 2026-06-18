@@ -1,0 +1,17 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# datasets / generated geometry
+*.h5
+*.ply
+
+# model checkpoints
+*.pth
+*.pt
+*.ckpt
+proj_log/**/results/test_latest/
+proj_log/**/model/
+# archives
+*.tar.gz
+*.zip
