@@ -1,0 +1,33 @@
+{
+  "acc_cmd": 0.793299175106719,
+  "acc_param": 0.6444902815147351,
+  "arg_group_acc": {
+    "arc": 0.3691363425,
+    "circle": 0.8813263533333333,
+    "extent": 0.7612148000000001,
+    "line": 0.519445195,
+    "plane": 0.9574874466666667,
+    "transform": 0.5301244275
+  },
+  "cd_available": true,
+  "chamfer_mean": 0.4040249012979558,
+  "chamfer_median": 0.3139846559791599,
+  "chamfer_trimmed_mean": 0.34742016479250454,
+  "ckpt": "latest",
+  "command_acc": {
+    "Arc": 0.32455891,
+    "Circle": 0.34034212,
+    "EOS": 0.0,
+    "Ext": 0.36511447,
+    "Line": 0.93356385,
+    "SOL": 0.59762127
+  },
+  "component": "positional_encoding",
+  "experiment_id": "A1_pos_sincos",
+  "invalid": 2997,
+  "invalid_ratio": 0.37220566318926973,
+  "seed": 2026,
+  "total": 8052,
+  "valid": 5055,
+  "variant": "sincos"
+}

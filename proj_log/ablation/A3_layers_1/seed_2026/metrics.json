@@ -1,0 +1,33 @@
+{
+  "acc_cmd": 0.8295421195261996,
+  "acc_param": 0.6326988573425097,
+  "arg_group_acc": {
+    "arc": 0.39630623249999997,
+    "circle": 0.77640982,
+    "extent": 0.7676982325,
+    "line": 0.52692719,
+    "plane": 0.9402753766666666,
+    "transform": 0.500630895
+  },
+  "cd_available": true,
+  "chamfer_mean": 0.3512821545215742,
+  "chamfer_median": 0.26245068399842697,
+  "chamfer_trimmed_mean": 0.29664900950885814,
+  "ckpt": "latest",
+  "command_acc": {
+    "Arc": 0.3447638,
+    "Circle": 0.55963412,
+    "EOS": 0.0,
+    "Ext": 0.45005679,
+    "Line": 0.92630612,
+    "SOL": 0.62933769
+  },
+  "component": "layer_count",
+  "experiment_id": "A3_layers_1",
+  "invalid": 3042,
+  "invalid_ratio": 0.37779433681073027,
+  "seed": 2026,
+  "total": 8052,
+  "valid": 5010,
+  "variant": "1+1"
+}
